@@ -1,0 +1,240 @@
+homeassistant:
+  customize:
+    sensor.pollen_index:
+      icon: mdi:flower
+    sensor.pollen_level:
+      icon: mdi:flower
+    sensor.top_allergen_1:
+      icon: mdi:flower
+    sensor.top_allergen_2:
+      icon: mdi:flower
+    sensor.top_allergen_3:
+      icon: mdi:flower
+    sensor.pollen_trend:
+      icon: mdi:flower
+    sensor.pollen_outlook:
+      icon: mdi:flower
+    sensor.pollen_season:
+      icon: mdi:flower
+    sensor.pollen_index_forecast:
+      icon: mdi:flower
+    sensor.pollen_level_forecast:
+      icon: mdi:flower
+    sensor.cold__flu_percentage:
+      icon: mdi:snowflake
+    sensor.cold_flu_risk:
+      icon: mdi:snowflake
+
+sensor:
+  - platform: darksky
+    api_key: !secret darksky_api_key
+    monitored_conditions:
+      - summary
+      - temperature
+      - hourly_summary
+      - temperature_max
+      - wind_speed
+      - humidity
+      - pressure
+      - temperature_min
+      - precip_intensity
+      - icon
+
+  - platform: template
+    sensors:
+      dark_sky_temperature_template:
+        value_template: "{{ states('sensor.dark_sky_temperature') }}"
+        icon_template: >
+          {% if is_state('sensor.dark_sky_icon', 'clear-day') %}
+            mdi:weather-sunny
+          {% elif is_state('sensor.dark_sky_icon', 'clear-night') %}
+            mdi:weather-night
+          {% elif is_state('sensor.dark_sky_icon', 'rain') %}
+            mdi:weather-rainy
+          {% elif is_state('sensor.dark_sky_icon', 'snow') %}
+            mdi:weather-snowy
+          {% elif is_state('sensor.dark_sky_icon', 'sleet') %}
+            mdi:weather-snowy-rainy
+          {% elif is_state('sensor.dark_sky_icon', 'wind') %}
+            mdi:weather-windy-variant
+          {% elif is_state('sensor.dark_sky_icon', 'fog') %}
+            mdi:weather-fog
+          {% elif is_state('sensor.dark_sky_icon', 'cloudy') %}
+            mdi:weather-cloudy
+          {% elif is_state('sensor.dark_sky_icon', 'partly-cloudy-day') or is_state('sensor.dark_sky_icon', 'partly-cloudy-night') %}
+            mdi:weather-partlycloudy
+          {% elif is_state('sensor.dark_sky_icon', 'hail') %}
+            mdi:weather-hail
+          {% elif is_state('sensor.dark_sky_icon', 'thunderstorm') %}
+            mdi:weather-lightning
+          {% else %}
+            mdi:help-circle
+          {% endif %}
+        friendly_name: "Current Temperature"
+        unit_of_measurement: '°F'
+
+      dark_sky_daily_high_low_template:
+        value_template: "{{ states('sensor.dark_sky_daily_high_temperature') }} / {{ states('sensor.dark_sky_daily_low_temperature') }}"
+        friendly_name: 'High / Low Temperature'
+        unit_of_measurement: "°F"
+
+  # Today's Pollen Index
+  - platform: rest
+    name: 'Pollen Index'
+    resource: https://www.pollen.com/api/forecast/current/pollen/32218
+    value_template: "{{value_json.Location.periods[1].Index}}"
+    scan_interval: 21600
+    headers:
+      Referer: "https://www.pollen.com"
+
+# Today's Pollen Level
+  - platform: template
+    sensors:
+      pollen_level:
+        friendly_name: 'Pollen Level'
+        entity_id: sensor.pollen_index
+        value_template: >-
+          {%- if states.sensor.pollen_index.state|float <= 2.4 %}
+              Low
+          {%- elif states.sensor.pollen_index.state|float <= 4.8 %}
+              Med/Low
+          {%- elif states.sensor.pollen_index.state|float <= 7.2 %}
+              Med
+          {%- elif states.sensor.pollen_index.state|float <= 9.6 %}
+              Med/High
+          {%- elif states.sensor.pollen_index.state|float <= 12.0 %}
+              High
+          {% else %}
+              Unknown
+          {%- endif %}
+
+ # Tomorrow's Pollen Index Forecast
+  - platform: rest
+    name: 'Pollen Index Forecast'
+    resource: https://www.pollen.com/api/forecast/current/pollen/32218
+    value_template: "{{value_json.Location.periods[2].Index}}"
+    scan_interval: 21600
+    headers:
+      Referer: "https://www.pollen.com"
+
+# Tomorrow's Pollen Level Forecast
+  - platform: template
+    sensors:
+      pollen_level_forecast:
+        friendly_name: 'Pollen Level Forecast'
+        entity_id: sensor.pollen_index
+        value_template: >-
+          {%- if states.sensor.pollen_index_forecast.state|float <= 2.4 %}
+              Low
+          {%- elif states.sensor.pollen_index_forecast.state|float <= 4.8 %}
+              Med/Low
+          {%- elif states.sensor.pollen_index_forecast.state|float <= 7.2 %}
+              Med
+          {%- elif states.sensor.pollen_index_forecast.state|float <= 9.6 %}
+              Med/High
+          {%- elif states.sensor.pollen_index_forecast.state|float <= 12.0 %}
+              High
+          {% else %}
+              Unknown
+          {%- endif %}
+
+ # Today's Top Allergen
+  - platform: rest
+    name: 'Top Allergen 1'
+    resource: https://www.pollen.com/api/forecast/current/pollen/32218
+    value_template: >-
+      {% if value_json.Location.periods[1].Triggers[0] %}
+      {{ value_json.Location.periods[1].Triggers[0].PlantType }}
+      {% else %}
+      -
+      {% endif %}
+    scan_interval: 21600
+    headers:
+      Referer: "https://www.pollen.com"
+
+ # Today's Second Allergen
+  - platform: rest
+    name: 'Top Allergen 2'
+    resource: https://www.pollen.com/api/forecast/current/pollen/32218
+    value_template: >-
+      {% if value_json.Location.periods[1].Triggers[1] %}
+      {{ value_json.Location.periods[1].Triggers[1].PlantType }}
+      {% else %}
+      -
+      {% endif %}
+    scan_interval: 21600
+    headers:
+      Referer: "https://www.pollen.com"
+
+  # Pollen Trend
+  - platform: rest
+    name: 'Pollen Trend'
+    resource: https://www.pollen.com/api/forecast/outlook/32218
+    value_template: "{{value_json.Trend}}"
+    scan_interval: 21600
+    headers:
+      Referer: "https://www.pollen.com"
+
+  # Pollen Outlook
+  - platform: rest
+    name: 'Pollen Outlook'
+    resource: https://www.pollen.com/api/forecast/outlook/32218
+    value_template: "{{value_json.Outlook}}"
+    scan_interval: 21600
+    headers:
+      Referer: "https://www.pollen.com"
+
+ # Pollen Season
+  - platform: rest
+    name: 'Pollen Season'
+    resource: https://www.pollen.com/api/forecast/outlook/32218
+    value_template: "{{value_json.Season}}"
+    scan_interval: 21600
+    headers:
+      Referer: "https://www.pollen.com"
+
+  # Today's Cold/Flu Percentage
+  - platform: rest
+    name: 'Cold & Flu Percentage'
+    resource: https://www.pollen.com/api/forecast/extended/cold/32218
+    value_template: "{{value_json.Location.periods[1].Index}}"
+    scan_interval: 21600
+    headers:
+      Referer: "https://www.pollen.com"
+    unit_of_measurement: "%"
+
+  # Today's Cold/Flu Risk
+  - platform: template
+    sensors:
+      cold_flu_risk:
+        friendly_name: 'Cold & Flu Risk'
+        entity_id: sensor.cold__flu_percentage
+        value_template: >-
+          {%- if states.sensor.cold__flu_percentage.state|float <= 2.4 %}
+              Low
+          {%- elif states.sensor.cold__flu_percentage.state|float <= 4.8 %}
+              Med/Low
+          {%- elif states.sensor.cold__flu_percentage.state|float <= 7.2 %}
+              Med
+          {%- elif states.sensor.cold__flu_percentage.state|float <= 9.6 %}
+              Med/High
+          {%- elif states.sensor.cold__flu_percentage.state|float <= 12.0 %}
+              High
+          {% else %}
+              Unknown
+          {%- endif %}
+
+group:
+  current_weather:
+      name: Current Weather
+      entities:
+        - sensor.dark_sky_temperature_template
+        - sensor.dark_sky_daily_high_low_template
+        - sensor.dark_sky_humidity
+        - sensor.dark_sky_precip_intensity
+        - sensor.dark_sky_wind_speed
+        - sensor.dark_sky_pressure
+        - sensor.cold_flu_risk
+        - sensor.top_allergen_1
+        - sensor.pollen_level
+        - sensor.pollen_outlook

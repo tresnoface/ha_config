@@ -1,0 +1,233 @@
+homeassistant:
+  customize_glob:
+    binary_sensor.entry_doors:
+      icon: mdi:security-home
+    binary_sensor.living_room:
+      icon: mdi:security-home
+    binary_sensor.front_windows:
+      icon: mdi:security-home
+    binary_sensor.gg_window:
+      icon: mdi:security-home
+    binary_sensor.master_bedroom:
+      icon: mdi:security-home
+
+alarm_control_panel:
+  platform: manual
+  name: Alarm
+  pending_time: 30
+  delay_time: 20
+  trigger_time: 4
+  disarmed:
+    trigger_time: 0
+  armed_home:
+    pending_time: 0
+    delay_time: 0
+
+konnected:
+  auth_token: !secret konnected_auth_token
+  devices:
+    - id: 2c3ae842c35f
+      binary_sensors:
+        - pin: 1
+          type: door
+          name: 'Entry Doors'
+        - pin: 2
+          type: window
+          name: 'Front Windows'
+        - pin: 5
+          type: window
+          name: 'GG Window'
+        - pin: 6
+          type: door
+          name: 'Living Room'
+        - pin: 7
+          type: window
+          name: 'Master Bedroom'
+      switches:
+        - pin: 8
+          name: 'Siren'
+
+group:
+  entry_points:
+   name: 'Entry Points'
+   entities:
+     - alarm_control_panel.alarm
+     - binary_sensor.living_room
+     - binary_sensor.entry_doors
+     - binary_sensor.front_windows
+     - binary_sensor.gg_window
+     - binary_sensor.master_bedroom
+  home_alarm:
+   name: 'Home Alarm'
+   entities:
+     - automation.alarm_away
+     - automation.alarm_home
+     - automation.alarm_notifysiren
+     - automation.disarm_when_user_code_is_entered
+     - automation.alarm_lights_in_living_room
+
+sensor:
+  - platform: template
+    sensors:
+      entry_open_alert:
+        friendly_name: 'Entry Open Alert'
+        value_template: >
+                          {% if states.binary_sensor.living_room.state == 'on' %}
+                                  Living Room
+                          {% endif %}
+
+                          {% if states.binary_sensor.entry_doors.state == 'on' %}
+                                  Entry Doors
+                          {% endif %}
+
+                          {% if states.binary_sensor.front_windows.state == 'on' %}
+                                  Front Windows
+                          {% endif %}
+
+                          {% if states.binary_sensor.gg_window.state == 'on' %}
+                                  GG's Windows
+                          {% endif %}
+
+                          {% if states.binary_sensor.master_bedroom.state == 'on' %}
+                                  Master Bedroom Windows
+                          {% endif %}
+
+  - platform: template
+    sensors:
+      front_door_code:
+        friendly_name: 'Front Door Code'
+        value_template: >
+                          {% if is_state_attr("lock.front_door_locked", "lock_status", "Unlocked with Keypad by user 1") %}
+                            U1
+                          {% elif is_state_attr("lock.front_door_locked", "lock_status", "Unlocked with Keypad by user 2") %}
+                            U2
+                          {% elif is_state_attr("lock.front_door_locked", "lock_status", "Locked with Keypad by user 1") %}
+                            L1
+                          {% elif is_state_attr("lock.front_door_locked", "lock_status", "Locked with Keypad by user 2") %}
+                            L2
+                          {% endif %}
+
+automation:
+  - alias: 'Alarm Away'
+    #hide_entity: True
+    #initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.entry_doors
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.front_windows
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.gg_window
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.living_room
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.master_bedroom
+        to: 'on'
+    condition:
+      - condition: state
+        entity_id: alarm_control_panel.alarm
+        state: armed_away
+    action:
+        service: alarm_control_panel.alarm_trigger
+        entity_id: alarm_control_panel.alarm
+
+  - alias: 'Alarm Home'
+    #hide_entity: True
+    #initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.entry_doors
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.front_windows
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.gg_window
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.living_room
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.master_bedroom
+        to: 'on'
+    condition:
+      - condition: state
+        entity_id: alarm_control_panel.alarm
+        state: armed_home
+    action:
+    #  - service: script.turn_on
+    #    entity_id: script.light_flash
+    #  - service: notify.all
+    #    data:
+    #      message: "Door or window is open!"
+    #  - service: tts.google_say
+    #    entity_id: media_player.all_speakers
+    #    entity_id: media_player.living_room_speaker
+    #    data:
+    #       message: 'Door or window open.'
+      - service: tts.google_say
+        entity_id: media_player.all_speakers
+        data_template:
+          message: "{{states('sensor.entry_open_alert')}} open."
+          cache: false
+
+  - alias: 'Alarm Notify/Siren'
+    trigger:
+      - platform: state
+        entity_id: alarm_control_panel.alarm
+        to: 'triggered'
+    action:
+      - service: notify.all
+        data:
+          message: "ALARM! The alarm has been triggered"
+      - service: homeassistant.turn_on
+        entity_id: switch.siren
+
+  - alias: 'Disarm when user code is entered'
+    trigger:
+      - platform: state
+        entity_id: sensor.front_door_code
+        to: "U1"
+      - platform: state
+        entity_id: sensor.front_door_code
+        to: "U2"
+    condition:
+  #    condition: or
+  #    conditions:
+  #      - condition: state
+  #        entity_id: alarm_control_panel.alarm
+  #        state: armed_home
+        - condition: state
+          entity_id: alarm_control_panel.alarm
+          state: armed_away
+    action:
+      - service: alarm_control_panel.alarm_disarm
+        entity_id: alarm_control_panel.alarm
+      - service: notify.all
+        data:
+          message: "Welcome Home! The alarm is disarmed."
+
+  - alias: 'Alarm lights in Living room'
+    trigger:
+      - platform: state
+        entity_id:
+          - group.entry_points
+    condition:
+      - condition: state
+        entity_id: sun.sun
+        state: 'below_horizon'
+    action:
+      - service: light.turn_on
+        entity_id:
+          - light.hue_color_lamp_1
+        data_template:
+          color_name: >
+            {% if states.group.entry_points.state == 'on' %}
+            red
+            {% else %}
+            white
+            {% endif %}

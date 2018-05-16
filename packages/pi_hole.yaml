@@ -1,0 +1,111 @@
+################################################################
+## Packages / Pi-Hole
+## @Taymurf - https://github.com/Taymurf/Home-AssistantConfig
+#Authorization & Token required (see WEBPASSWORD in /etc/pihole/setupVars.conf)
+#pi_hole_command_on: curl -X "<IP-ADDRESS>/admin/api.php?enable&auth=WEBPASSWORD"
+#pi_hole_command_off: curl -X "<IP-ADDRESS>/admin/api.php?disable=3600&auth=WEBPASSWORD"
+################################################################
+homeassistant:
+  customize:
+    #sensor.pihole:
+    #  friendly_name: Pi Hole Server
+    #  entity_picture: /local/custom_icons/pihole.png
+
+    switch.pihole_temp_disable:
+      friendly_name: Pi-Hole
+      icon: mdi:filter-variant
+
+    sensor.pihole_ads_percentage_blocked_today:
+      friendly_name: '% Traffic Blocked'
+      unit_of_measurement: '%'
+      icon: mdi:ticket-percent
+
+    sensor.pihole_domains_blocked:
+      friendly_name: Domains Blocked
+      icon: mdi:do-not-disturb
+
+    sensor.pihole_dns_unique_clients:
+      friendly_name: Unique Clients
+      icon: mdi:desktop-classic
+
+    sensor.pihole_ads_blocked_today:
+      friendly_name: Ads Blocked Today
+      icon: mdi:do-not-disturb
+
+    sensor.pihole_dns_queries_today:
+      friendly_name: DNS Queries Today
+      icon: mdi:note-text
+
+    sensor.pihole_dns_unique_domains:
+      friendly_name: Unique Domains
+      icon: mdi:approval
+
+    sensor.pihole_dns_queries_forwarded:
+      friendly_name: Queries Forwarded
+      icon: mdi:arrange-send-backward
+
+    sensor.pihole_dns_queries_cached:
+      friendly_name: Queries Cached
+      icon: mdi:animation
+
+group:
+  Ads Blocked:
+    entities:
+      - sensor.pihole
+      - switch.pihole_temp_disable
+      - sensor.pihole_ads_blocked_today
+      - sensor.pihole_ads_percentage_blocked_today
+      - sensor.pihole_dns_queries_today
+      - sensor.pihole_domains_blocked
+      - sensor.pihole_dns_unique_domains
+      - sensor.pihole_dns_queries_forwarded
+      - sensor.pihole_dns_queries_cached
+
+
+###############################################################################
+#  Sensors
+###############################################################################
+sensor:
+  - platform: pi_hole
+    host: 10.50.21.2
+
+# #####Custom Version sensor
+#   - platform: command_line
+#     command: "pihole -v -p -c"
+#     name: 'pihole_version_current'
+#     value_template: '{{ value[28:] }}'
+#     scan_interval: 86400
+
+#   - platform: command_line
+#     command: "pihole -v -p -l"
+#     name: 'pihole_version_latest'
+#     value_template: '{{ value[27:] }}'
+#     scan_interval: 86400
+
+#   - platform: template
+#     sensors:
+#       pi_hole_version:
+#         value_template: "{%- if states.sensor.pihole_version_current.state == states.sensor.pihole_version_latest.state -%}{{states.sensor.pihole_version_current.state}} {% else %}{{states.sensor.pihole_version_latest.state}} Available{% endif%}"
+#         icon_template: >-
+#           {% if states.sensor.pihole_version_current.state == states.sensor.pihole_version_latest.state %}
+#             mdi:checkbox-marked
+#           {% else %}
+#             mdi:checkbox-blank-outline
+#           {% endif %}
+
+#  - platform: template
+#    sensors:
+#      pihole:
+#        friendly_name: 'PiHole'
+#        value_template: "{{ 'Online' if is_state('device_tracker.raspberrypi', 'home') else 'Offline' }}"
+
+
+###############################################################################
+#  Switch
+###############################################################################
+switch:
+  - platform: command_line
+    switches:
+      pihole_temp_disable:
+        command_on: !secret pi_hole_command_on
+        command_off: !secret pi_hole_command_off

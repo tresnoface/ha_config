@@ -1,0 +1,19 @@
+sensor:
+  - platform: command_line
+    name: Lets Encrypt Expiration
+    unit_of_measurement: days
+    scan_interval: 86400
+    command: !secret ssl_command
+
+
+automation:
+  - alias: 'Lets Encrypt Cert Did Not Update'
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.lets_encrypt_expiration
+        below: 28
+    action:
+      service: notify.pushbullet
+      data:
+        title: 'Lets Encrypt Cert Did Not Update'
+        message: "Review Lets Encrypt SSL cert to determine why it did not update"

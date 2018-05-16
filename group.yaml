@@ -1,0 +1,68 @@
+#################################################################
+## View
+#################################################################
+
+  default_view:
+    view: yes
+    icon: mdi:home
+    entities:
+      - group.occupancy
+      - group.current_weather
+      - lock.front_door_locked
+      - switch.front_hallway_switch
+      - group.entry_points
+      - group.thermostat
+      #- configurator.philips_hue
+      - group.hue_lights
+
+  Media:
+    view: yes
+    icon: mdi:play-circle-outline
+    entities:
+      - media_player.bedroom
+      - media_player.kids_bedroom
+      - media_player.living_room_speaker
+      - media_player.master_bedroom_speaker
+
+  Automation:
+    view: yes
+    icon: mdi:robot
+    entities:
+      - group.home_alarm
+      - group.automations_for_lights
+      - group.reminder_automations
+
+  Cameras:
+    view: yes
+    icon: mdi:camera
+    entities:
+      #- camera.camera
+      - camera.front_yard
+
+  HA:
+    view: yes
+    icon: mdi:chip
+    entities:
+      - group.ha_server_monitor
+      - group.ha_version_info
+      - group.ads_blocked
+      - group.zwave
+      - switch.siren
+
+
+#################################################################
+## Groups
+#################################################################
+
+  Zwave:
+     entities:
+       - zwave.aeotec_zw090_zstick_gen5_us
+       - zwave.front_door
+       - zwave.front_hallway
+
+  Hue Lights:
+     entities:
+       - light.hue_color_lamp_1
+       - light.hue_color_lamp_2
+       - light.hue_color_lamp_3
+       - light.hue_color_lamp_4

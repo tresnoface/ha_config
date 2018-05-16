@@ -1,0 +1,35 @@
+automation:
+  - alias: 'Sunset Stuff On'
+    trigger:
+      - platform: state
+        entity_id: sun.sun
+        to: 'below_horizon'
+        from: 'above_horizon'
+    action:
+      - service: script.speech_engine
+        data:
+          call_dark_outside: 1
+      - service: light.turn_on
+        entity_id:
+          - light.hue_color_lamp_3
+
+  - alias: 'Sunset Stuff Off'
+  # trigger:
+  #  - platform: sun
+  #    event: sunrise
+  #    offset: '-02:00:00'
+    trigger:
+       - platform: state
+         entity_id: sun.sun
+         to: 'above_horizon'
+         from: 'below_horizon'
+    action:
+      - service: light.turn_off
+        entity_id:
+          - light.hue_color_lamp_3
+
+group:
+  Automations For Lights:
+     entities:
+       - automation.sunset_stuff_on
+       - automation.sunset_stuff_off
