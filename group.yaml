@@ -9,11 +9,11 @@
       - group.occupancy
       - group.current_weather
       - lock.front_door_locked
-      - switch.front_hallway_switch
       - group.entry_points
       - group.thermostat
       #- configurator.philips_hue
       - group.hue_lights
+      - group.living_room
 
   Media:
     view: yes
@@ -48,21 +48,3 @@
       - group.ads_blocked
       - group.zwave
       - switch.siren
-
-
-#################################################################
-## Groups
-#################################################################
-
-  Zwave:
-     entities:
-       - zwave.aeotec_zw090_zstick_gen5_us
-       - zwave.front_door
-       - zwave.front_hallway
-
-  Hue Lights:
-     entities:
-       - light.hue_color_lamp_1
-       - light.hue_color_lamp_2
-       - light.hue_color_lamp_3
-       - light.hue_color_lamp_4

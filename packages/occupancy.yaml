@@ -66,7 +66,6 @@ group:
     name: ' '
     control: hidden
     entities:
-      - group.phone_trackers
       - alarm_control_panel.alarm
       - sensor.home_status
       - input_boolean.guest_mode

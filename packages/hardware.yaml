@@ -1,0 +1,30 @@
+group:
+  Hue Lights:
+   entities:
+      - light.hue_color_lamp_1
+      - light.hue_color_lamp_2
+      - light.hue_color_lamp_3
+      - light.hue_color_lamp_4
+
+  Living Room:
+     - switch.living_room_flood_lights
+     - light.inovelli_unknown_type1f01_id1f01_level
+     - fan.ge_14287_fan_control_switch_level
+     - switch.front_hallway_switch
+
+  Zwave:
+     entities:
+       - zwave.aeotec_zw090_zstick_gen5_us
+       - zwave.front_door
+       - zwave.front_hallway
+       - zwave.ge_14287_fan_control_switch
+       - zwave.inovelli_unknown_type1f01_id1f01
+
+zwave:
+  usb_path: /dev/ttyACM0
+  network_key: !secret zwave_key
+
+mqtt:
+  broker: !secret mqtt_broker_ip
+
+wemo:           

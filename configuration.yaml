@@ -73,18 +73,12 @@ google_assistant:
     switch.siren:
       expose: false
 
-mqtt:
-  broker: !secret mqtt_broker_ip
-
 tts:
   - platform: google
     cache: true
     cache_dir: /tmp/tts
     time_memory: 300
 
-zwave:
-  usb_path: /dev/ttyACM0
-  network_key: !secret zwave_key
 
 notify:
   - name: pushbullet
