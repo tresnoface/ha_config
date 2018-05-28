@@ -9,9 +9,9 @@ automation:
           {% set val = now() %}
           {{ not( ((val.strftime("%a")=="Sat" ) or (val.strftime("%a")=="Sun" )) and (((val.isocalendar()[1])%2)==1))  }}
     action:
-      - wait_template: "{{ is_state('group.adults' , 'home') }}"
-        timeout: 14:00:00
-      - delay: 00:15:00
+    #  - wait_template: "{{ is_state('group.adults' , 'home') }}"
+    #    timeout: 14:00:00
+    #  - delay: 00:15:00
       - service: script.speech_engine
         data:
           call_recycle_night: 1
@@ -21,9 +21,9 @@ automation:
       - platform: time
         at: '19:15:00'
     action:
-      - wait_template: "{{ is_state('group.adults' , 'home') }}"
-        timeout: 14:00:00
-      - delay: 00:15:00
+    #  - wait_template: "{{ is_state('group.adults' , 'home') }}"
+    #    timeout: 14:00:00
+    #  - delay: 00:15:00
       - service: script.speech_engine
         data:
           call_garbage_night: 1

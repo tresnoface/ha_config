@@ -24,7 +24,7 @@ alarm_control_panel:
     delay_time: 0
 
 konnected:
-  auth_token: !secret konnected_auth_token
+  access_token: !secret konnected_auth_token
   devices:
     - id: 2c3ae842c35f
       binary_sensors:
@@ -51,7 +51,6 @@ group:
   entry_points:
    name: 'Entry Points'
    entities:
-     - alarm_control_panel.alarm
      - binary_sensor.living_room
      - binary_sensor.entry_doors
      - binary_sensor.front_windows

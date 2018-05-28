@@ -68,6 +68,7 @@ group:
     entities:
       - alarm_control_panel.alarm
       - sensor.home_status
+      - lock.front_door_locked
       - input_boolean.guest_mode
       - input_boolean.holiday_mode
       - group.all_automations
